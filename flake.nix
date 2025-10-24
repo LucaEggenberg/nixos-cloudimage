@@ -3,14 +3,19 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-25.05";
-    nixos-generators.url = "github:nix-community/nixos-generators";
   };
 
-  outputs = { self, nixpkgs, nixos-generators, ... }: {
-    packages.x86_64-linux.nixos-cloudinit = nixos-generators.nixos-generate {
-      system = "x86_64-linux";
-      format = "qcow2";
-      modules = [ ./cloudinit.nix ];
+  outputs = { self, nixpkgs, nixos-generators, ... }: 
+  let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs { inherit system; };
+  in {
+    packages.${system}.nixos-cloudinit = pkgs.nixos {
+      inherit system;
+      modules = [ 
+        "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
+        ./configuration.nix
+      ];
     };
   };
 }
