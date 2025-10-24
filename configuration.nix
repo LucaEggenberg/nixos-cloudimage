@@ -7,16 +7,15 @@
   };
 
   proxmox.cloudInit.enable = true;
-
   services.qemuGuest.enable = true;
-  services.qemuGuestAgent.enable = true;
 
+  services.openssh.enable = true;
   services.openssh.settings = {
-    enable = true;
     PermitRootLogin = "no";
     PasswordAuthentication = false;
   };
 
-  users.mutableUsers = false;
+  users.mutableUsers = true;
+  users.allowNoPasswordLogin = true;
   system.stateVersion = "25.05";
 }
