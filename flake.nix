@@ -5,13 +5,13 @@
     nixpkgs.url = "nixpkgs/nixos-25.05";
   };
 
-  outputs = { self, nixpkgs, ... }: 
+  outputs = { self, nixpkgs, ... }:
   let
     system = "x86_64-linux";
   in {
     packages.${system}.nixos-cloudinit = (nixpkgs.lib.nixosSystem {
       inherit system;
-      modules = [ 
+      modules = [
         "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
         ./configuration.nix
       ];
