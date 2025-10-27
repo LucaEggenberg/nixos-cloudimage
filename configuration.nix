@@ -1,4 +1,7 @@
 { config, pkgs, lib, ... }: {
+  environment.systemPackages = [ pkgs.cloud-init ];
+
+  # proxmox config
   proxmox.qemuConf = {
     name = "nixos-template";
     cores = 2;
@@ -14,9 +17,56 @@
   proxmox.partitionTableType = "efi";
   proxmox.cloudInit.enable = true;
 
+  # virtualization & cloudinit
   services.qemuGuest.enable = true;
-  services.cloud-init.enable = true;
 
+  services.cloud-init = {
+    enable = true;
+    network.enable = true;
+
+    config = ''
+      datasource_list: [ NoCloud, ConfigDrive ]
+
+      system_info:
+        distro: nixos
+        network:
+          renderers: [ 'networkd' ]
+        default_user:
+          name: nix
+
+      users:
+        - default
+
+      ssh_pwauth: false
+
+      chpasswd:
+        expire: false
+
+      cloud_init_modules:
+        - migrator
+        - seed_random
+        - growpart
+        - resizefs
+      cloud_config_modules:
+        - disk_setup
+        - mounts
+        - ssh
+      cloud_final_modules: []
+    '';
+  };
+
+  # ssh & user
+  services.openssh.enable = true;
+  users.mutableUsers = true;
+  users.allowNoPasswordLogin = true;
+  
+  users.users.nix = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    description = "default user";
+  };
+
+  # boot config
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
@@ -25,12 +75,21 @@
     fsType = "ext4";
   };
 
-  boot.initrd.availableKernelModules = [ "virtio_pci" "virtio_scsi" ];
-  boot.kernelModules = [ "virtio_pci" "virtio_scsi" ];
+  boot.initrd.availableKernelModules = [
+    "sr_mod"
+    "cdrom"
+    "isofs"
+    "virtio_pci"
+    "virtio_blk"
+    "virtio_scsi"
+  ];
 
-  services.openssh.enable = true;
-  users.mutableUsers = true;
-  users.allowNoPasswordLogin = true;
+  boot.kernelModules = [ "sr_mod" "cdrom" "isofs" ];
+
+  # networking
+  systemd.network.enable = true;
+  networking.dhcpcd.enable = false;
+  networking.useDHCP = false;
 
   system.stateVersion = "25.05";
 }
