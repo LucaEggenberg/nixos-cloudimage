@@ -59,16 +59,32 @@
   services.openssh.enable = true;
   users.mutableUsers = true;
   users.allowNoPasswordLogin = true;
-  security.sudo.wheelNeedsPassword = false;
 
   users.users.nix = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
     description = "default user";
+    
   };
 
-  # don't require sigs for first provisioning 
-  nix.settings.require-sigs = false;
+  security.sudo = {
+    wheelNeedsPassword = false;
+    extraRules = [
+      {
+        users = [ "nix" ];
+        commands = [{
+          command = "/run/current-system/sw/bin/switch-to-configuration";
+          options = [ "NOPASSWD" ];
+        }];
+      }
+    ];
+  };
+
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    trusted-users = [ "root" "@wheel" "nix" ];
+    require-sigs = false;
+  };
 
   # boot config
   boot.loader.systemd-boot.enable = true;
