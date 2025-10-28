@@ -59,7 +59,8 @@
   services.openssh.enable = true;
   users.mutableUsers = true;
   users.allowNoPasswordLogin = true;
-  
+  security.sudo.wheelNeedsPassword = false;
+
   users.users.nix = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
