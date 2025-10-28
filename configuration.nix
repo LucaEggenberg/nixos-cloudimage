@@ -67,6 +67,9 @@
     description = "default user";
   };
 
+  # don't require sigs for first provisioning 
+  nix.settings.require-sigs = false;
+
   # boot config
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
